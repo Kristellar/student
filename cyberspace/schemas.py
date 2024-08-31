@@ -53,7 +53,7 @@ class Message(BaseModel):
 
 class VirtualInternship(BaseModel):
     first_name: str
-    last_name: str
+    last_name: Optional[str] = None
     email_id: EmailStr
     phone_number: str
     address: str
@@ -70,33 +70,33 @@ class VirtualInternship(BaseModel):
 
 class Seminar(BaseModel):
     first_name: str
-    last_name: str
+    last_name: Optional[str] = None
     email_id: EmailStr
     phone_number: str
     course: str
     year_of_study: str
     seminar_topic: str
-    additional_comments: Optional[str]
+    additional_comments: Optional[str] = None
 
     class Config:
         orm_mode = True
 
 class Webinar(BaseModel):
     first_name: str
-    last_name: str
+    last_name: Optional[str] = None
     email_id: EmailStr
     phone_number: str
     course: str
     year_of_study: str
     webinar_topic: str
-    additional_comments: Optional[str]
+    additional_comments: Optional[str] = None
 
     class Config:
         orm_mode = True
 
 class ResearchPaper(BaseModel):
     first_name: str
-    last_name: str
+    last_name: Optional[str] = None
     email_id: EmailStr
     phone_number: str
     student_id: str

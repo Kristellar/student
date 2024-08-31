@@ -104,11 +104,13 @@ def login(
 
 @app.post("/forgot-password/")
 def forgot_password(
+    request: schemas.EmailRequest,
     background_tasks: BackgroundTasks,
-    email: EmailStr,
     db: Session = Depends(get_db)
 ):
     try:
+        email = request.email
+        print(email)
         user = crud.get_user_by_email(db, email)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
@@ -119,6 +121,7 @@ def forgot_password(
         return {"message": "OTP sent"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+    
     
 @app.post("/reset-password/")
 def reset_password(
@@ -170,13 +173,14 @@ def get_user_profile(
         user = crud.get_user_profile(db, token)
         if user is None:
             raise HTTPException(status_code=404, detail="User profile not found")
-
+        
         # Retrieve counts
         virtual_internships_count = db.query(VirtualInternship).filter(VirtualInternship.user_id == user.id).count()
         seminars_count = db.query(Seminar).filter(Seminar.user_id == user.id).count()
         webinars_count = db.query(Webinar).filter(Webinar.user_id == user.id).count()
-        research_papers_count = db.query(ResearchPaper).filter(ResearchPaper.user_id == user.id).count()
+        # research_papers_count = db.query(ResearchPaper).filter(ResearchPaper.user_id == user.id).count()
 
+       
         # Create and return the UserProfile response model
         user_profile = schemas.UserProfile(
             id=user.id,
@@ -189,7 +193,7 @@ def get_user_profile(
             virtual_internships_count=virtual_internships_count,
             seminars_count=seminars_count,
             webinars_count=webinars_count,
-            research_papers_count=research_papers_count
+            research_papers_count= 0     #research_papers_count
         )
         return user_profile
 
@@ -202,7 +206,7 @@ def get_user_profile(
 @app.post("/virtualInternship/", response_model=schemas.VirtualInternship)
 async def register_virtual_internship_user(
     first_name: str = Form(...),
-    last_name: str = Form(...),
+    last_name: Optional[str] = Form(None),
     email_id: EmailStr = Form(...),
     phone_number: str = Form(...),
     address: str = Form(...),
@@ -253,7 +257,7 @@ async def register_virtual_internship_user(
 @app.post("/seminar/")
 def create_seminar(
     first_name: str = Form(...),
-    last_name: str = Form(...),
+    last_name: Optional[str] = Form(None),
     email_id: EmailStr = Form(...),
     phone_number: str = Form(...),
     course: str = Form(...),
@@ -282,7 +286,7 @@ def create_seminar(
 @app.post("/webinar/")
 def create_webinar(
     first_name: str = Form(...),
-    last_name: str = Form(...),
+    last_name: Optional[str] = Form(None),
     email_id: EmailStr = Form(...),
     phone_number: str = Form(...),
     course: str = Form(...),
@@ -313,7 +317,7 @@ def create_webinar(
 @app.post("/research-paper/")
 def create_research_paper(
     first_name: str = Form(...),
-    last_name: str = Form(...),
+    last_name: Optional[str] = Form(None),
     email_id: EmailStr = Form(...),
     phone_number: str = Form(...),
     student_id: str = Form(...),
@@ -328,9 +332,8 @@ def create_research_paper(
     try:
         # Save the uploaded PDF using the save_pdf function
         pdf_filename = save_pdf(paper_pdf)
-
         # Create the research paper object
-        research_paper = ResearchPaper(
+        research_paper = schemas.ResearchPaper(
             first_name=first_name,
             last_name=last_name,
             email_id=email_id,
@@ -344,7 +347,7 @@ def create_research_paper(
         )
 
         # Call the CRUD function to save the research paper in the database
-        created_research_paper = create_research_paper(db=db, research_paper=research_paper, user_id= dbuser.id)
+        created_research_paper = crud.create_research_paper(db=db, research_paper=research_paper, user_id= dbuser.id )
 
         return created_research_paper
     except Exception as e:

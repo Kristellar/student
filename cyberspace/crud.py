@@ -6,7 +6,7 @@ from typing import Optional
 from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from service import hash_password, save_image
+from service import hash_password, save_image, save_pdf
 from models import (
     User as UserModel,
     VirtualInternship as VirtualInternshipModel,
@@ -104,13 +104,12 @@ def create_access_token(data: dict, expires_delta: Optional[datetime.timedelta] 
     encoded_jwt = jwt.encode(to_encode, secret_key, algorithm=algorithm)
     return encoded_jwt
 
-
+ 
 def get_user_profile(db: Session, token: str):
     try:
         # Decode the token to get user data
         payload = jwt.decode(token, secret_key, algorithms=[algorithm])
         user_id = payload.get("sub")
-
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid token")
 
@@ -151,17 +150,18 @@ def create_webinar(db: Session, webinar: WebinarSchema, user_id: int):
     db.refresh(db_webinar)
     return db_webinar
 
-def create_research_paper(db: Session, research_paper: ResearchPaperSchema, user_id: int, file: UploadFile):
-    paper_filename = save_image(file)
+def create_research_paper(db: Session, research_paper: ResearchPaperSchema, user_id: int):
     db_paper = ResearchPaperModel(
         **research_paper.model_dump(),
-        user_id=user_id,
-        paper_pdf=paper_filename
+        user_id=user_id
     )
     db.add(db_paper)
     db.commit()
     db.refresh(db_paper)
+
     return db_paper
+
+
 
 
 

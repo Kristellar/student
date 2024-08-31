@@ -27,7 +27,7 @@ class VirtualInternship(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id'))
     first_name = Column(String(50))
-    last_name = Column(String(50))
+    last_name = Column(String(50) , nullable=True)
     email_id = Column(String(100))
     phone_number = Column(String(20))
     address = Column(String(100))

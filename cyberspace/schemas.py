@@ -43,7 +43,6 @@ class EmailRequest(BaseModel):
     email: EmailStr
 
 class ResetPassword(BaseModel):
-    email: EmailStr
     otp: str
     new_password: str
     confirm_password: str
